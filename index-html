@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>FT/HT توقعات</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap">
+<style>
+:root{--bg:#e9efe9;--card:#fff;--ink:#14231b;--mute:#5b6b61;--pitch:#14452f;--line:#c9d6cc;--card-y:#f2c200;--bar:#14452f;--bar2:#9db8a6;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f1913;--card:#17261d;--ink:#e8f0ea;--mute:#98aa9f;--pitch:#2f8a5c;--line:#2a3f32;--bar:#3fae78;--bar2:#2a4a39}}
+:root[data-theme="dark"]{--bg:#0f1913;--card:#17261d;--ink:#e8f0ea;--mute:#98aa9f;--pitch:#2f8a5c;--line:#2a3f32;--bar:#3fae78;--bar2:#2a4a39}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:Cairo,system-ui,sans-serif;line-height:1.6}
+main{max-width:640px;margin:0 auto;padding:16px}
+h1{font-size:28px;font-weight:900;margin:8px 0 2px}
+.sub{color:var(--mute);margin:0 0 16px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:14px}
+.teams{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.teams h2{font-size:16px;margin:0 0 8px}
+label{display:block;font-size:13px;color:var(--mute);margin-top:6px}
+input{width:100%;font:inherit;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink)}
+input:focus-visible,button:focus-visible{outline:3px solid var(--card-y);outline-offset:1px}
+.row3{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+button{width:100%;margin-top:12px;font:inherit;font-weight:700;font-size:17px;padding:12px;border:0;border-radius:10px;background:var(--pitch);color:#fff;cursor:pointer}
+.board{background:var(--pitch);color:#fff;border-radius:14px;padding:18px 14px;margin-bottom:14px;text-align:center}
+.board .names{font-size:15px;opacity:.9}
+.board .big{font-size:56px;font-weight:900;line-height:1.1;direction:ltr;letter-spacing:2px}
+.board .lbl{font-size:13px;opacity:.8}
+.board .ht{display:inline-block;margin-top:8px;background:var(--card-y);color:#14231b;font-weight:900;border-radius:6px;padding:2px 12px;direction:ltr}
+.bars div.r{display:grid;grid-template-columns:90px 1fr 44px;gap:8px;align-items:center;margin:6px 0;font-size:14px}
+.track{height:12px;background:var(--bar2);border-radius:6px;overflow:hidden;direction:ltr}
+.fill{height:100%;background:var(--bar)}
+.pct{text-align:left;font-weight:700;direction:ltr}
+h3{font-size:16px;margin:0 0 6px}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{border:1px solid var(--line);border-radius:999px;padding:2px 12px;font-size:14px;direction:ltr}
+.tw{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:14px;text-align:center}
+td,th{border:1px solid var(--line);padding:6px}
+td.hi{background:var(--card-y);color:#14231b;font-weight:900}
+small{color:var(--mute)}
+</style>
+</head>
+<body>
+<main>
+<h1>توقعات FT / HT</h1>
+<p class="sub">دخل إحصائيات الفريقين وغادي تخرج ليك النتيجة المتوقعة فالشوط الأول والوقت الكامل.</p>
+
+<div class="card">
+<div class="teams">
+<div><h2>المضيف (دارو)</h2>
+<label>السمية<input id="hn" value="الفريق أ"></label>
+<div class="row3">
+<label>المباريات<input id="hmp" type="number" min="1" value="6"></label>
+<label>الأهداف ليه<input id="hgf" type="number" min="0" value="10"></label>
+<label>الأهداف عليه<input id="hga" type="number" min="0" value="5"></label>
+</div></div>
+<div><h2>الضيف (برا)</h2>
+<label>السمية<input id="an" value="الفريق ب"></label>
+<div class="row3">
+<label>المباريات<input id="amp" type="number" min="1" value="6"></label>
+<label>الأهداف ليه<input id="agf" type="number" min="0" value="6"></label>
+<label>الأهداف عليه<input id="aga" type="number" min="0" value="9"></label>
+</div></div>
+</div>
+<label>معدل أهداف الفريق الواحد فالبطولة<input id="avg" type="number" step="0.05" min="0.5" value="1.35"></label>
+<small>المضيف: إحصائياته فدارو. الضيف: إحصائياته برا.</small>
+<button id="go" type="button">احسب التوقع</button>
+</div>
+
+<div id="out"></div>
+</main>
+<script>
+(function(){
+var $=function(i){return document.getElementById(i)};
+function pois(k,l){var p=Math.exp(-l);for(var i=1;i<=k;i++)p*=l/i;return p}
+function dist(l,n){var a=[];for(var k=0;k<=n;k++)a.push(pois(k,l));return a}
+function sg(d){return d>0?0:d===0?1:2}
+function pc(x){return Math.round(x*100)}
+function esc(s){return String(s).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
+function calc(){
+  var hn=esc($('hn').value||'المضيف'),an=esc($('an').value||'الضيف');
+  var v=function(i){return Math.max(0,parseFloat($(i).value)||0)};
+  var hmp=Math.max(1,v('hmp')),amp=Math.max(1,v('amp')),avg=Math.max(.5,v('avg')||1.35);
+  var xh=Math.min(5,(v('hgf')/hmp)*(v('aga')/amp)/avg);
+  var xa=Math.min(5,(v('agf')/amp)*(v('hga')/hmp)/avg);
+  xh=Math.max(.15,xh);xa=Math.max(.15,xa);
+  var S=.44;
+  var N=5,h1=dist(xh*S,N),a1=dist(xa*S,N),h2=dist(xh*(1-S),N),a2=dist(xa*(1-S),N);
+  var ft={},ht={},hf=[[0,0,0],[0,0,0],[0,0,0]],r1=[0,0,0],rf=[0,0,0],btts=0,o25=0,tot=0,eg=0;
+  for(var a=0;a<=N;a++)for(var b=0;b<=N;b++){
+    var pht=h1[a]*a1[b];ht[a+'-'+b]=(ht[a+'-'+b]||0)+pht;
+    for(var c=0;c<=N;c++)for(var d=0;d<=N;d++){
+      var p=pht*h2[c]*a2[d],H=a+c,A=b+d,k=H+'-'+A;
+      ft[k]=(ft[k]||0)+p;tot+=p;
+      hf[sg(a-b)][sg(H-A)]+
